@@ -6,6 +6,8 @@
       "args": [
         "-y",
         "@playwright/mcp@latest",
+        "--browser",
+        "chromium",
         "--user-data-dir",
         "/root/.playwright-notebooklm-profile",
         "--vision"
