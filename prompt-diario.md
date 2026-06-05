@@ -128,23 +128,85 @@ Anotar las URLs de ambas páginas Notion para usar en PASO 7.
 
 ## PASO 5B — ACTUALIZAR NOTEBOOKLM (Playwright MCP)
 
-Si falla en cualquier punto: anotar en Incidencias como "NotebookLM: [motivo]" y continuar en PASO 6.
-Si hay pantalla de login de Google: anotar "NotebookLM: re-auth necesaria — ejecutar scripts/setup-auth.sh".
+**Reglas de este paso:**
+- Si falla en cualquier sub-paso: anotar en Incidencias como `NotebookLM: [motivo]` y continuar en PASO 6.
+- Si detectas pantalla de login de Google en cualquier momento: ABORTAR, anotar
+  `NotebookLM: re-auth necesaria — ejecutar scripts/setup-auth.sh` y continuar en PASO 6.
+- Usa siempre `browser_snapshot` antes de hacer clic para localizar elementos reales.
+- URL fija del notebook: `https://notebooklm.google.com/notebook/3865a42e-1acc-488e-8e7f-65f15e7b34f9`
 
-1. `browser_navigate` a https://notebooklm.google.com/notebook/3865a42e-1acc-488e-8e7f-65f15e7b34f9
-2. Esperar 3-5 segundos.
-3. `browser_screenshot` — si hay login de Google: ABORTAR PASO 5B.
-4. En panel de fuentes, localizar fuente de texto pegado anterior → clic en menú ⋮ → "Eliminar fuente" / "Delete source" → confirmar.
-5. Si no hay fuente anterior, saltar al punto 6.
-6. Clic en botón "+" / "Añadir fuente" / "Add source".
-7. Seleccionar "Texto pegado" / "Copied text" / "Paste text".
-8. `browser_type` con el texto completo del PASO 4A.
-9. Clic en "Insertar" / "Insert".
-10. `browser_screenshot` para confirmar que la fuente aparece.
-11. Localizar panel "Resumen de audio" / "Audio Overview".
-12. Clic en "Generar" / "Generate".
-13. Esperar 3 segundos.
-14. `browser_screenshot` para confirmar que la generación comenzó.
+### 5B.1 — Navegar y verificar sesión
+
+1. `browser_navigate` → URL fija del notebook.
+2. `browser_wait_for` → buscar texto "Add source" o "Añadir fuente" en la página — timeout 15 s.
+3. `browser_take_screenshot` → revisar: si aparece formulario con campo de email/contraseña
+   de Google, ABORTAR este paso.
+4. `browser_snapshot` → para entender el estado actual de la página (fuentes existentes,
+   panel Audio Overview, idioma de la interfaz).
+
+### 5B.2 — Eliminar fuente de texto anterior (si existe)
+
+5. En el snapshot, buscar en el panel de fuentes (columna izquierda) si hay una fuente
+   de tipo "texto pegado" (icono de página con texto, etiqueta "Pasted text" o similar).
+6. Si existe esa fuente:
+   a. `browser_click` en el botón de menú "⋮" o los tres puntos de esa fuente.
+   b. `browser_snapshot` → localizar opción "Delete source" / "Eliminar fuente" /
+      "Remove" en el menú desplegable.
+   c. `browser_click` en esa opción.
+   d. Si aparece modal de confirmación: `browser_snapshot` → `browser_click` en
+      "Delete" / "Eliminar" / "Confirm".
+   e. `browser_wait_for` → esperar que desaparezca la fuente del panel — timeout 8 s.
+7. Si no hay fuente anterior, continuar en 5B.3.
+
+### 5B.3 — Añadir nueva fuente con el texto del briefing
+
+8. `browser_click` en el botón "+" o "Add source" / "Añadir fuente" del panel de fuentes.
+9. `browser_snapshot` → ver las opciones del modal/menú desplegable.
+10. `browser_click` en "Copied text" / "Texto copiado" / "Paste text" / "Texto pegado"
+    (la opción para pegar texto plano, no para URL ni archivo).
+11. `browser_wait_for` → esperar que aparezca el área de texto (textarea o div editable)
+    — timeout 8 s.
+12. `browser_snapshot` → confirmar que el área de texto está activa.
+13. `browser_click` dentro del área de texto para enfocarla.
+14. `browser_type` → pegar el **texto completo del PASO 4A** (el briefing en español,
+    incluyendo título, todos los temas y la sección de fuentes).
+15. `browser_click` en "Insert" / "Insertar" / "Add" para confirmar la fuente.
+16. `browser_wait_for` → esperar que la nueva fuente aparezca en el panel — timeout 12 s.
+17. `browser_take_screenshot` → confirmar visualmente que la fuente está añadida.
+
+### 5B.4 — Generar Audio Overview en español
+
+18. `browser_snapshot` → localizar el panel "Audio Overview" / "Resumen de audio"
+    (normalmente en el panel derecho).
+19. Si hay botón "Customize" / "Personalizar" / "Adjust" visible:
+    a. `browser_click` en ese botón.
+    b. `browser_snapshot` → ver formulario de personalización.
+    c. En el campo de idioma: seleccionar "Spanish" / "Español".
+    d. Dejar el resto de opciones por defecto.
+    e. `browser_click` en "Save" / "Guardar" / "Done".
+20. `browser_click` en "Generate" / "Generar" del panel Audio Overview.
+21. `browser_wait_for` → esperar que aparezca spinner o estado "Generating…" / "Generando…"
+    — timeout 10 s.
+22. `browser_take_screenshot` → confirmar que la generación está en curso.
+
+### 5B.5 — Esperar el audio en español y lanzar generación en inglés
+
+23. `browser_wait_for` → esperar que aparezca botón de play ▶ o texto "Play" / "Reproducir"
+    indicando que el audio ES está listo — **timeout 360 s (6 min)**.
+24. Si aparece el audio:
+    a. `browser_take_screenshot` → confirmar audio ES listo.
+    b. `browser_click` en "Customize" / "Personalizar".
+    c. `browser_snapshot` → ver formulario de personalización.
+    d. En el campo de idioma: seleccionar "English" / "Inglés".
+    e. `browser_click` en "Save" / "Guardar".
+    f. `browser_click` en "Regenerate" / "Volver a generar" / "Generate".
+    g. `browser_wait_for` → spinner de generación — timeout 10 s.
+    h. `browser_take_screenshot` → confirmar que la generación EN está en curso.
+    i. Anotar en resumen: `NotebookLM: audio ES listo, generación EN iniciada`.
+25. Si después de 6 min no aparece el botón de play:
+    a. `browser_take_screenshot`.
+    b. Anotar incidencia: `NotebookLM: timeout esperando audio ES — generación EN no lanzada`.
+    c. Continuar en PASO 6.
 
 ---
 
@@ -166,7 +228,7 @@ Si hay pantalla de login de Google: anotar "NotebookLM: re-auth necesaria — ej
 
 Usar `mcp__Gmail__create_draft` con:
 - Para: manuel.crespo.marcos@gmail.com
-- Asunto: "🎙️ AI Briefing [DD MMM YYYY] — listo en Notion"
+- Asunto: "😙️ AI Briefing [DD MMM YYYY] — listo en Notion"
 - Cuerpo HTML con: enlaces a ambas páginas Notion + lista de temas del día + temas descartados.
 
 ---
@@ -182,7 +244,8 @@ Al terminar todos los pasos, imprimir en pantalla:
     ✅ Posts LinkedIn: [URL Notion]
     ✅ Historial Drive: actualizado
     ✅ Gmail draft: creado
-    [✅/❌] NotebookLM web: [estado]
+    [✅/⏳/❌] NotebookLM audio ES: [listo / generando / error]
+    [✅/⏳/❌] NotebookLM audio EN: [listo / generando / no lanzado]
 
     Incidencias:
     - [lista de incidencias o "Ninguna"]
