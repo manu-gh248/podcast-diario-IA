@@ -3,7 +3,7 @@ name: Desplegar cerebro-3d en GitHub Pages
 on:
   push:
     branches:
-      - claude/3d-brain-interactive-model-el7o56
+      - main
     paths:
       - cerebro-3d/**
       - .github/workflows/deploy.yml
