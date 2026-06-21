@@ -19,7 +19,7 @@ export default function App() {
     let activo = true
     // Nota: el dev server de Vite hace fallback a index.html (HTML) para rutas inexistentes,
     // así que no basta con res.ok: descartamos respuestas HTML para evitar falsos positivos.
-    fetch('/models/cerebro.glb', { method: 'HEAD' })
+    fetch(`${import.meta.env.BASE_URL}models/cerebro.glb`, { method: 'HEAD' })
       .then((r) => {
         if (!activo) return
         const tipo = r.headers.get('content-type') ?? ''

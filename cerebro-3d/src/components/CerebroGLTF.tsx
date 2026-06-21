@@ -6,7 +6,7 @@ import { idDesdeNombreMalla } from '../data/mapeoZAnatomy'
 import { REGIONES_POR_ID } from '../data/regiones'
 import { useStore } from '../store/useStore'
 
-const RUTA_MODELO = '/models/cerebro.glb'
+const RUTA_MODELO = `${import.meta.env.BASE_URL}models/cerebro.glb`
 
 interface MallaMapeada {
   mesh: THREE.Mesh
